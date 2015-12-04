@@ -50,19 +50,48 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
 
-  def tail[A](l: List[A]): List[A] = sys.error("todo")
+  def tail[A](l: List[A]): List[A] = l match {
+    case Cons(_, t) =>t
+    case Nil => Nil
+  }
 
-  def setHead[A](l: List[A], h: A): List[A] = sys.error("todo")
+  def setHead[A](l: List[A], h: A): List[A] = Cons(h,tail(l))
 
-  def drop[A](l: List[A], n: Int): List[A] = sys.error("todo")
+  def drop[A](l: List[A], n: Int): List[A] = if (n==0) l else drop(tail(l), n-1)
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = sys.error("todo")
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
+    case Cons(h,t) if f(h) => dropWhile(t,f)
+    case _ => l
+  }
 
-  def init[A](l: List[A]): List[A] = sys.error("todo")
+  def init[A](l: List[A]): List[A] = l match {
+    case Cons(h, Nil) => Nil
+    case Cons(h, t) => Cons(h, init(t))
+    case Nil => Nil 
+  }
 
-  def length[A](l: List[A]): Int = sys.error("todo")
+  def length[A](l: List[A]): Int = foldRight(l,0)( (_:A, c:Int) =>c+ 1)
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
+    @annotation.tailrec
+    def go(l2 : List[A], acc: B):B = l2 match {
+      case Nil => acc 
+      case Cons(h,t) => go(t, f(acc,h))
+    }
+   go(l,z)    
+  }
 
+  def sum3(ns: List[Int]) =
+    foldLeft(ns, 0)((x,y) => x + y)
+
+  def product3(ns: List[Double]) =
+    foldLeft(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
+
+  def foldRight2[A,B](l:List[A], z: B)(f: (A, B) => B): B = {
+    val res = foldLeft(l,(x: B)=>x)((g,v) => (rightVal: B) => g(f(v,rightVal)))
+    res(z)
+  }
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+
+  def reverse[A](l: List[A]) : List[A] = foldLeft(l, Nil:List[A])((acc,x)=> Cons(x,acc))
 }
